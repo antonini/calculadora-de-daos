@@ -11,6 +11,7 @@ public class MetodosDoDao extends JavaBaseListener {
 	private String classe;
 	private Set<String> metodosQueDevolvemOTipo;
 	private Set<String> metodosQueNaoDevolvemOTipo;
+	private String lastModifier;
 	
 	public MetodosDoDao() {
 		metodosQueDevolvemOTipo = new HashSet<String>();
@@ -24,8 +25,15 @@ public class MetodosDoDao extends JavaBaseListener {
 	public Set<String> getMetodosQueNaoDevolvemOTipo() {
 		return metodosQueNaoDevolvemOTipo;
 	}
+
+	@Override public void enterModifier(JavaParser.ModifierContext ctx) { 
+		lastModifier = ctx.getText();
+	}
 	
 	@Override public void enterMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
+		
+		if(notPublic()) return;
+		
 		String metodo = null;
 		try {
 			String tipo = removeGenerico(ctx.type().getText());
@@ -39,6 +47,10 @@ public class MetodosDoDao extends JavaBaseListener {
 		} catch (Exception e) {
 		}
 	}
+	private boolean notPublic() {
+		return !"public".equals(lastModifier);
+	}
+
 	private String removeGenerico(String text) {
 		int menor = text.indexOf("<");
 		int maior = text.indexOf(">");

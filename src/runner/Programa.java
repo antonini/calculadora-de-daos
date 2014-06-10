@@ -3,6 +3,7 @@ package runner;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -33,8 +34,22 @@ public class Programa {
 			MetodosDoDao metodos = new MetodosDoDao();
 			new ParseTreeWalker().walk(metodos, r);
 			
-			System.out.println(args[1] + "," + f.getAbsolutePath() + "," + metodos.getMetodosQueDevolvemOTipo().size() + "," + metodos.getMetodosQueNaoDevolvemOTipo().size());
+			if(args[2]==null) {
+				imprimeTotalizadores(args, f, metodos);
+			} else {
+				imprimeOsQueNaoDevolvem(args, f, metodos);
+			}
 		}
-		
+	}
+
+	private static void imprimeOsQueNaoDevolvem(String[] args, File f, MetodosDoDao metodos) {
+		Set<String> metodosQueNaoDevolvemOTipo = metodos.getMetodosQueNaoDevolvemOTipo();
+		for(String m : metodosQueNaoDevolvemOTipo) {
+			System.out.println(args[1] + "," + f.getAbsolutePath() + "," + m);
+		}
+	}
+
+	private static void imprimeTotalizadores(String[] args, File f, MetodosDoDao metodos) {
+		System.out.println(args[1] + "," + f.getAbsolutePath() + "," + metodos.getMetodosQueDevolvemOTipo().size() + "," + metodos.getMetodosQueNaoDevolvemOTipo().size());
 	}
 }
