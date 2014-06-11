@@ -8,11 +8,14 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import antlr.JavaParser.CompilationUnitContext;
-import dao.DaoMethods;
 
 public class ParserRunner {
 
-	public DaoMethods run(InputStream f) {
+	private JavaBaseListener listener;
+	public ParserRunner(JavaBaseListener listener) {
+		this.listener = listener;
+	}
+	public void run(InputStream f) {
 		try {
 			CharStream input;
 			input = new ANTLRInputStream(f);
@@ -22,9 +25,7 @@ public class ParserRunner {
 			JavaParser parser = new JavaParser(tokens);
 			CompilationUnitContext r = parser.compilationUnit();
 			
-			DaoMethods metodos = new DaoMethods();
-			new ParseTreeWalker().walk(metodos, r);
-			return metodos;
+			new ParseTreeWalker().walk(listener, r);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

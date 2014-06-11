@@ -1,8 +1,9 @@
-package dao;
+package listeners;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -18,8 +19,13 @@ public class DaoMethods extends JavaBaseListener {
 	private Set<String> problematicOnes;
 	private String lastModifier;
 	private List<String> primitivesList;
+	private Set<String> enumerators;
+	private Map<String, Set<String>> interfaces;
 	
-	public DaoMethods() {
+	public DaoMethods(Set<String> enumerators, Map<String, Set<String>> interfaces) {
+		this.enumerators = enumerators;
+		this.interfaces = interfaces;
+		
 		rightOnes = new HashSet<String>();
 		problematicOnes = new HashSet<String>();
 		classes = new Stack<String>();
@@ -45,9 +51,8 @@ public class DaoMethods extends JavaBaseListener {
 		primitivesList.add("BigDecimal");
 		primitivesList.add("Calendar");
 		primitivesList.add("Date");
-		
 	}
-	
+
 	public Set<String> getRightOnes() {
 		return rightOnes;
 	}
@@ -65,14 +70,13 @@ public class DaoMethods extends JavaBaseListener {
 		if(classes.size()!=1) return;
 		if(notPublic()) return;
 
-		String clazz = classes.peek();
 		
 		try {
 			String returnType = removeGenerics(ctx.type().getText());
 			String methodName = ctx.Identifier().getText();
 			
-			if(typeMatches(clazz, returnType) || parameterIsFromType(ctx) ||
-					isPrimitive(returnType)) {
+			if(typeMatches(clazz(), returnType) || parameterIsFromType(ctx) ||
+					isPrimitive(returnType) || isEnum(returnType) || isInterface(returnType)) {
 				rightOnes.add(methodName);
 			} else {
 				problematicOnes.add(methodName);
@@ -82,6 +86,24 @@ public class DaoMethods extends JavaBaseListener {
 		}
 	}
 
+
+	private String clazz() {
+		return classes.peek();
+	}
+
+	private boolean isInterface(String returnType) {
+		Set<String> interfacesImplemented = interfaces.get(returnType);
+		if(interfacesImplemented == null) return false;
+		return interfacesImplemented.contains(clazzWithoutDao());
+	}
+
+	private String clazzWithoutDao() {
+		return clazz().substring(0, clazz().length()-3);
+	}
+
+	private boolean isEnum(String returnType) {
+		return enumerators.contains(returnType);
+	}
 
 	private boolean isPrimitive(String returnType) {
 		return primitivesList.contains(returnType);
@@ -102,11 +124,9 @@ public class DaoMethods extends JavaBaseListener {
 	private boolean parameterIsFromType(MethodDeclarationContext ctx) {
 		if(ctx.formalParameters().formalParameterList() == null) return false;
 
-		String clazz = classes.peek();
-		
 		for(FormalParameterContext param : ctx.formalParameters().formalParameterList().formalParameter()) {
 			String parameterType = param.type().getText();
-			if(typeMatches(clazz, parameterType)) return true;
+			if(typeMatches(clazz(), parameterType)) return true;
 		}
 		return false;
 	}

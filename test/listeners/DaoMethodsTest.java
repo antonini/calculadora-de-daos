@@ -1,14 +1,30 @@
-package dao;
+package listeners;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import antlr.ParserRunner;
 
 public class DaoMethodsTest {
 
+	private DaoMethods methods;
+	private HashSet<String> enumerators;
+	private HashMap<String, Set<String>> interfaces;
+
+	@Before
+	public void setUp() {
+		enumerators = new HashSet<String>();
+		interfaces = new HashMap<String, Set<String>>();
+
+		methods = new DaoMethods(enumerators, interfaces);
+	}
+	
 	@Test
 	public void shouldMatchClassNameWithTheMethodReturnType() {
 		String dao = 
@@ -16,7 +32,7 @@ public class DaoMethodsTest {
 				+ "public Invoice getAll() {}"
 				+ "}";
 		
-		DaoMethods methods = new ParserRunner().run(new ByteArrayInputStream(dao.getBytes()));
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(1,methods.getRightOnes().size());
 		Assert.assertEquals(0,methods.getProblematicOnes().size());
@@ -31,7 +47,7 @@ public class DaoMethodsTest {
 						+ "public AnyDTO getAll2(int x, Invoice inv) {}"
 						+ "}";
 		
-		DaoMethods methods = new ParserRunner().run(new ByteArrayInputStream(dao.getBytes()));
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(2,methods.getRightOnes().size());
 		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
@@ -53,8 +69,37 @@ public class DaoMethodsTest {
 				+ "public long x9() {}"
 				+ "}";
 		
-		DaoMethods methods = new ParserRunner().run(new ByteArrayInputStream(dao.getBytes()));
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		Assert.assertEquals(9,methods.getRightOnes().size());
+	}
+	
+	@Test
+	public void shouldMatchEnumerator() {
+		String dao = 
+				  "class InvoiceDAO {"
+				+ "public PaymentInfoEnum x1() {}"
+				+ "}";
+		
+		enumerators.add("PaymentInfoEnum");
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		Assert.assertEquals(1,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("x1"));
+	}
+	
+	@Test
+	public void shouldMatchChildReturn() {
+		String dao = 
+				  "class InvoiceDAO {"
+				+ "public SuperInvoice x1() {}"
+				+ "}";
+		
+		interfaces.put("SuperInvoice", new HashSet<String>());
+		interfaces.get("SuperInvoice").add("Invoice");
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		Assert.assertEquals(1,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("x1"));
 	}
 
 	@Test
@@ -65,7 +110,7 @@ public class DaoMethodsTest {
 				+ "public Set<Invoice> getAll2() {}"
 				+ "}";
 
-		DaoMethods methods = new ParserRunner().run(new ByteArrayInputStream(dao.getBytes()));
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(2,methods.getRightOnes().size());
 		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
@@ -83,7 +128,7 @@ public class DaoMethodsTest {
 				+ "public Invoice getAll2() {}"
 				+ "}";
 		
-		DaoMethods methods = new ParserRunner().run(new ByteArrayInputStream(dao.getBytes()));
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(2,methods.getRightOnes().size());
 		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
@@ -97,7 +142,7 @@ public class DaoMethodsTest {
 				+ "public Car getAll() {}"
 				+ "}";
 		
-		DaoMethods methods = new ParserRunner().run(new ByteArrayInputStream(dao.getBytes()));
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(0,methods.getRightOnes().size());
 		Assert.assertEquals(1,methods.getProblematicOnes().size());
@@ -119,7 +164,7 @@ public class DaoMethodsTest {
 				+ "public Car x4() {}"
 				+ "}";
 		
-		DaoMethods methods = new ParserRunner().run(new ByteArrayInputStream(dao.getBytes()));
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(1,methods.getProblematicOnes().size());
 		Assert.assertEquals(1,methods.getRightOnes().size());

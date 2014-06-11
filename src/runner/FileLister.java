@@ -23,7 +23,21 @@ public class FileLister {
 				}
 			}
 		} catch (Throwable e) {
-			System.err.println("getAllFiles error in " + aStartingDir.getPath());
+			System.err.println("getAllDaoFiles error in " + aStartingDir.getPath());
+		}
+	}
+	private void getAllProductionFilesIn(File aStartingDir, ArrayList<File> result) {
+		try {
+			File[] filesAndDirs = aStartingDir.listFiles();
+			for (File file : filesAndDirs) {
+				if (file.isDirectory()) {
+					getAllDaoFilesIn(file, result);
+				} else if (file.isFile() && !isDao(file)) {
+					result.add(file);
+				}
+			}
+		} catch (Throwable e) {
+			System.err.println("getAllProductionFiles error in " + aStartingDir.getPath());
 		}
 	}
 	
@@ -34,6 +48,12 @@ public class FileLister {
 	public List<File> getAllDaoFiles() {
 		ArrayList<File> result = new ArrayList<File>();
 		getAllDaoFilesIn(new File(path), result);
+		return result;
+	}
+
+	public List<File> getAllProductionFiles() {
+		ArrayList<File> result = new ArrayList<File>();
+		getAllProductionFilesIn(new File(path), result);
 		return result;
 	}
 
