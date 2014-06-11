@@ -11,11 +11,11 @@ public class ClassInfo extends JavaBaseListener {
 
 	private boolean isEnum;
 	private String name;
-	private Set<String> interfaces;
-	private boolean implementsInterface;
+	private Set<String> subtypes;
+	private boolean hasSubtype;
 	
 	public ClassInfo() {
-		interfaces = new HashSet<String>();
+		subtypes = new HashSet<String>();
 	}
 	
 	@Override public void enterClassDeclaration(JavaParser.ClassDeclarationContext ctx) {
@@ -23,10 +23,15 @@ public class ClassInfo extends JavaBaseListener {
 		name = ctx.Identifier().getText();
 		
 		if(ctx.typeList()!=null) {
-			implementsInterface = true;
+			hasSubtype = true;
 			for(TypeContext type : ctx.typeList().type()) {
-				interfaces.add(type.getText());
+				subtypes.add(type.getText());
 			}
+		}
+		
+		if(ctx.type()!=null) {
+			hasSubtype = true;
+			subtypes.add(ctx.type().getText());
 		}
 	}
 
@@ -41,12 +46,12 @@ public class ClassInfo extends JavaBaseListener {
 		return isEnum;
 	}
 	
-	public boolean implementsInterface() {
-		return implementsInterface;
+	public boolean isSubtypeOrImplementsInterface() {
+		return hasSubtype;
 	}
 	
-	public Set<String> interfaces() {
-		return interfaces;
+	public Set<String> subtypeAndInterfaces() {
+		return subtypes;
 	}
 
 	public String getName() {

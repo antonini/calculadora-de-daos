@@ -18,24 +18,24 @@ public class Runner {
 		
 		FileLister files = new FileLister(args[0]);
 		Set<String> enumerators = new HashSet<String>();
-		Map<String, Set<String>> interfaces = new HashMap<String, Set<String>>();
+		Map<String, Set<String>> subtypes = new HashMap<String, Set<String>>();
 		
 		for(File f : files.getAllProductionFiles()) {
 			ClassInfo info = new ClassInfo();
 			new ParserRunner(info).run(new FileInputStream(f));
 			
 			if(info.isEnum()) enumerators.add(info.getName());
-			if(info.implementsInterface()) {
-				interfaces.put(info.getName(), new HashSet<String>());
-				for(String interfaceName : info.interfaces()) {
-					interfaces.get(info.getName()).add(interfaceName);
+			if(info.isSubtypeOrImplementsInterface()) {
+				subtypes.put(info.getName(), new HashSet<String>());
+				for(String interfaceName : info.subtypeAndInterfaces()) {
+					subtypes.get(info.getName()).add(interfaceName);
 				}
 			}
 		}
 		
 		for(File f : files.getAllDaoFiles()) {
 			
-			DaoMethods allMethods = new DaoMethods(enumerators, interfaces);
+			DaoMethods allMethods = new DaoMethods(enumerators, subtypes);
 			new ParserRunner(allMethods).run(new FileInputStream(f));
 			
 			if(args[2]==null) {

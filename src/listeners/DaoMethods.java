@@ -20,11 +20,11 @@ public class DaoMethods extends JavaBaseListener {
 	private String lastModifier;
 	private List<String> primitivesList;
 	private Set<String> enumerators;
-	private Map<String, Set<String>> interfaces;
+	private Map<String, Set<String>> subtypes;
 	
-	public DaoMethods(Set<String> enumerators, Map<String, Set<String>> interfaces) {
+	public DaoMethods(Set<String> enumerators, Map<String, Set<String>> subtypes) {
 		this.enumerators = enumerators;
-		this.interfaces = interfaces;
+		this.subtypes = subtypes;
 		
 		rightOnes = new HashSet<String>();
 		problematicOnes = new HashSet<String>();
@@ -76,7 +76,7 @@ public class DaoMethods extends JavaBaseListener {
 			String methodName = ctx.Identifier().getText();
 			
 			if(typeMatches(clazz(), returnType) || parameterIsFromType(ctx) ||
-					isPrimitive(returnType) || isEnum(returnType) || isInterface(returnType)) {
+					isPrimitive(returnType) || isEnum(returnType) || isSubtypeOrInterface(returnType)) {
 				rightOnes.add(methodName);
 			} else {
 				problematicOnes.add(methodName);
@@ -91,8 +91,8 @@ public class DaoMethods extends JavaBaseListener {
 		return classes.peek();
 	}
 
-	private boolean isInterface(String returnType) {
-		Set<String> interfacesImplemented = interfaces.get(returnType);
+	private boolean isSubtypeOrInterface(String returnType) {
+		Set<String> interfacesImplemented = subtypes.get(returnType);
 		if(interfacesImplemented == null) return false;
 		return interfacesImplemented.contains(clazzWithoutDao());
 	}

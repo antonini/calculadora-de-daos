@@ -39,7 +39,7 @@ public class ClassInfoTest {
 		new ParserRunner(classInfo).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertFalse(classInfo.isEnum());
-		Assert.assertFalse(classInfo.implementsInterface());
+		Assert.assertFalse(classInfo.isSubtypeOrImplementsInterface());
 		Assert.assertEquals("Payment", classInfo.getName());
 	}
 	
@@ -52,10 +52,24 @@ public class ClassInfoTest {
 		
 		new ParserRunner(classInfo).run(new ByteArrayInputStream(dao.getBytes()));
 		
-		Assert.assertTrue(classInfo.implementsInterface());
+		Assert.assertTrue(classInfo.isSubtypeOrImplementsInterface());
 		Assert.assertEquals("Payment", classInfo.getName());
-		Assert.assertTrue(classInfo.interfaces().contains("A"));
+		Assert.assertTrue(classInfo.subtypeAndInterfaces().contains("A"));
 	}
+	@Test
+	public void shouldIdentifyInheritanceImplemented() {
+		String dao = 
+				"class Payment extends A {"
+						+ "public void x() {}"
+						+ "}";
+		
+		new ParserRunner(classInfo).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertTrue(classInfo.isSubtypeOrImplementsInterface());
+		Assert.assertEquals("Payment", classInfo.getName());
+		Assert.assertTrue(classInfo.subtypeAndInterfaces().contains("A"));
+	}
+	
 	@Test
 	public void shouldIdentifyMultipleInterfacesImplemented() {
 		String dao = 
@@ -65,9 +79,24 @@ public class ClassInfoTest {
 		
 		new ParserRunner(classInfo).run(new ByteArrayInputStream(dao.getBytes()));
 		
-		Assert.assertTrue(classInfo.implementsInterface());
-		Assert.assertTrue(classInfo.interfaces().contains("A"));
-		Assert.assertTrue(classInfo.interfaces().contains("B"));
-		Assert.assertTrue(classInfo.interfaces().contains("C"));
+		Assert.assertTrue(classInfo.isSubtypeOrImplementsInterface());
+		Assert.assertTrue(classInfo.subtypeAndInterfaces().contains("A"));
+		Assert.assertTrue(classInfo.subtypeAndInterfaces().contains("B"));
+		Assert.assertTrue(classInfo.subtypeAndInterfaces().contains("C"));
+	}
+	@Test
+	public void shouldIdentifyMultipleInterfacesImplementedAndInheritance() {
+		String dao = 
+				"class Payment extends Father implements A,B,C {"
+						+ "public void x() {}"
+						+ "}";
+		
+		new ParserRunner(classInfo).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertTrue(classInfo.isSubtypeOrImplementsInterface());
+		Assert.assertTrue(classInfo.subtypeAndInterfaces().contains("A"));
+		Assert.assertTrue(classInfo.subtypeAndInterfaces().contains("Father"));
+		Assert.assertTrue(classInfo.subtypeAndInterfaces().contains("B"));
+		Assert.assertTrue(classInfo.subtypeAndInterfaces().contains("C"));
 	}
 }
