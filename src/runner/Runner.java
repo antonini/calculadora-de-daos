@@ -21,27 +21,36 @@ public class Runner {
 		Map<String, Set<String>> subtypes = new HashMap<String, Set<String>>();
 		
 		for(File f : files.getAllProductionFiles()) {
-			ClassInfo info = new ClassInfo();
-			new ParserRunner(info).run(new FileInputStream(f));
-			
-			if(info.isEnum()) enumerators.add(info.getName());
-			if(info.isSubtypeOrImplementsInterface()) {
-				subtypes.put(info.getName(), new HashSet<String>());
-				for(String interfaceName : info.subtypeAndInterfaces()) {
-					subtypes.get(info.getName()).add(interfaceName);
+			try {
+				ClassInfo info = new ClassInfo();
+				new ParserRunner(info).run(new FileInputStream(f));
+				
+				if(info.isEnum()) enumerators.add(info.getName());
+				if(info.isSubtypeOrImplementsInterface()) {
+					subtypes.put(info.getName(), new HashSet<String>());
+					for(String interfaceName : info.subtypeAndInterfaces()) {
+						subtypes.get(info.getName()).add(interfaceName);
+					}
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		
 		for(File f : files.getAllDaoFiles()) {
 			
-			DaoMethods allMethods = new DaoMethods(enumerators, subtypes);
-			new ParserRunner(allMethods).run(new FileInputStream(f));
-			
-			if(args[2]==null) {
-				printSummary(args, f, allMethods);
-			} else {
-				printTheProblematics(args, f, allMethods);
+			try {
+				DaoMethods allMethods = new DaoMethods(enumerators, subtypes);
+				new ParserRunner(allMethods).run(new FileInputStream(f));
+				
+				if(args.length == 2) {
+					printSummary(args, f, allMethods);
+				} else {
+					printTheProblematics(args, f, allMethods);
+				}
+			} catch (Exception e) {
+				System.err.println("problem in " + f.getPath());
+				e.printStackTrace();
 			}
 		}
 	}

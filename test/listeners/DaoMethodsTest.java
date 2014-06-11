@@ -38,6 +38,20 @@ public class DaoMethodsTest {
 		Assert.assertEquals(0,methods.getProblematicOnes().size());
 		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
 	}
+	
+	@Test
+	public void shouldIgnoreConstructors() {
+		String dao = 
+				"class InvoiceDAO {"
+						+ "public InvoiceDAO() {}"
+						+ "public Invoice getAll() {}"
+						+ "}";
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertEquals(1,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
+	}
 
 	@Test
 	public void shouldMatchClassNameWithTheMethodParameters() {

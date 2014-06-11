@@ -69,20 +69,16 @@ public class DaoMethods extends JavaBaseListener {
 	@Override public void enterMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
 		if(classes.size()!=1) return;
 		if(notPublic()) return;
-
+		if(ctx.type()==null) return;
 		
-		try {
-			String returnType = removeGenerics(ctx.type().getText());
-			String methodName = ctx.Identifier().getText();
-			
-			if(typeMatches(clazz(), returnType) || parameterIsFromType(ctx) ||
-					isPrimitive(returnType) || isEnum(returnType) || isSubtypeOrInterface(returnType)) {
-				rightOnes.add(methodName);
-			} else {
-				problematicOnes.add(methodName);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		String returnType = removeGenerics(ctx.type().getText());
+		String methodName = ctx.Identifier().getText();
+		
+		if(typeMatches(clazz(), returnType) || parameterIsFromType(ctx) ||
+				isPrimitive(returnType) || isEnum(returnType) || isSubtypeOrInterface(returnType)) {
+			rightOnes.add(methodName);
+		} else {
+			problematicOnes.add(methodName);
 		}
 	}
 
