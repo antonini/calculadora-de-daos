@@ -33,6 +33,7 @@ public class Runner {
 					}
 				}
 			} catch (Exception e) {
+				System.err.println("problem in " + f.getPath());
 				e.printStackTrace();
 			}
 		}
