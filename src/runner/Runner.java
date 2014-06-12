@@ -56,8 +56,6 @@ public class Runner {
 		}
 	}
 
-	// turmadao retorna turmacancelada, jeito de pegar dto?
-	
 	private static void printTheProblematics(String[] args, File f, DaoMethods methods) {
 		Set<String> methodsToBePrinted = methods.getProblematicOnes();
 		
