@@ -147,6 +147,21 @@ public class DaoMethodsTest {
 	}
 
 	@Test
+	public void shouldMatchDTOIfDTONameContainsTheClassName() {
+		String dao = 
+				"class InvoiceDAO {"
+						+ "public InvoiceDTO getAll() {}"
+						+ "public AnyCrazyInvoiceType getAll2() {}"
+						+ "}";
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertEquals(2,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2"));
+	}
+
+	@Test
 	public void shouldIgnoreInnerClasses() {
 		String dao = 
 				  "class InvoiceDAO {"
