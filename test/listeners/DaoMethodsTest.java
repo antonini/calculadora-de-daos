@@ -130,6 +130,21 @@ public class DaoMethodsTest {
 		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
 		Assert.assertTrue(methods.getRightOnes().contains("getAll2"));
 	}
+	
+	@Test
+	public void shouldConsiderRightWhenMethodReturnsGenericWithTwoOrTypes() {
+		String dao = 
+				  "class InvoiceDAO {"
+				+ "public Map<A, B> getAll() {}"
+				+ "public Map<A, B, C> getAll2() {}"
+				+ "}";
+
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertEquals(2,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2"));
+	}
 
 	@Test
 	public void shouldIgnoreInnerClasses() {

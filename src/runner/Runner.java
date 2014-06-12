@@ -56,6 +56,9 @@ public class Runner {
 		}
 	}
 
+	// multimap<x, y> e map e sortedmap
+	// turmadao retorna turmacancelada, jeito de pegar dto?
+	
 	private static void printTheProblematics(String[] args, File f, DaoMethods methods) {
 		Set<String> methodsToBePrinted = methods.getProblematicOnes();
 		

@@ -75,13 +75,18 @@ public class DaoMethods extends JavaBaseListener {
 		String methodName = ctx.Identifier().getText();
 		
 		if(typeMatches(clazz(), returnType) || parameterIsFromType(ctx) ||
-				isPrimitive(returnType) || isEnum(returnType) || isSubtypeOrInterface(returnType)) {
+				isPrimitive(returnType) || isEnum(returnType) || 
+				isSubtypeOrInterface(returnType) || isGenericWithManyTypes(returnType)) {
 			rightOnes.add(methodName);
 		} else {
 			problematicOnes.add(methodName);
 		}
 	}
 
+
+	private boolean isGenericWithManyTypes(String returnType) {
+		return returnType.contains(",");
+	}
 
 	private String clazz() {
 		return classes.peek();
