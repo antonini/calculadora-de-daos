@@ -36,7 +36,7 @@ public class DaoMethodsTest {
 		
 		Assert.assertEquals(1,methods.getRightOnes().size());
 		Assert.assertEquals(0,methods.getProblematicOnes().size());
-		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/0"));
 	}
 	
 	@Test
@@ -50,7 +50,7 @@ public class DaoMethodsTest {
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(1,methods.getRightOnes().size());
-		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/0"));
 	}
 
 	@Test
@@ -64,8 +64,23 @@ public class DaoMethodsTest {
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(2,methods.getRightOnes().size());
-		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
-		Assert.assertTrue(methods.getRightOnes().contains("getAll2"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/1[Invoice]"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2/2[int,Invoice]"));
+	}
+	
+	@Test
+	public void shouldUnderstandOverloadedMethods() {
+		String dao = 
+				"class InvoiceDAO {"
+						+ "public AnyDTO getAll(Invoice inv) {}"
+						+ "public AnyDTO getAll(int x, Invoice inv) {}"
+						+ "}";
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertEquals(2,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/1[Invoice]"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/2[int,Invoice]"));
 	}
 	
 	@Test
@@ -98,7 +113,7 @@ public class DaoMethodsTest {
 		
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		Assert.assertEquals(1,methods.getRightOnes().size());
-		Assert.assertTrue(methods.getRightOnes().contains("x1"));
+		Assert.assertTrue(methods.getRightOnes().contains("x1/0"));
 	}
 	
 	@Test
@@ -113,7 +128,7 @@ public class DaoMethodsTest {
 		
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		Assert.assertEquals(1,methods.getRightOnes().size());
-		Assert.assertTrue(methods.getRightOnes().contains("x1"));
+		Assert.assertTrue(methods.getRightOnes().contains("x1/0"));
 	}
 
 	@Test
@@ -127,8 +142,8 @@ public class DaoMethodsTest {
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(2,methods.getRightOnes().size());
-		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
-		Assert.assertTrue(methods.getRightOnes().contains("getAll2"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/0"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2/0"));
 	}
 	
 	@Test
@@ -142,10 +157,26 @@ public class DaoMethodsTest {
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(2,methods.getRightOnes().size());
-		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
-		Assert.assertTrue(methods.getRightOnes().contains("getAll2"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/0"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2/0"));
 	}
 
+	@Test
+	public void shouldLookToParametersInVoidMethods() {
+		String dao = 
+				"class InvoiceDAO {"
+						+ "public void getAll(Invoice inv) {}"
+						+ "public void getAll2(int x) {}"
+						+ "}";
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertEquals(1,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/1[Invoice]"));
+		Assert.assertEquals(1,methods.getProblematicOnes().size());
+		Assert.assertTrue(methods.getProblematicOnes().contains("getAll2/1[int]"));
+	}
+	
 	@Test
 	public void shouldMatchDTOIfDTONameContainsTheClassName() {
 		String dao = 
@@ -157,8 +188,8 @@ public class DaoMethodsTest {
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(2,methods.getRightOnes().size());
-		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
-		Assert.assertTrue(methods.getRightOnes().contains("getAll2"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/0"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2/0"));
 	}
 
 	@Test
@@ -175,8 +206,8 @@ public class DaoMethodsTest {
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(2,methods.getRightOnes().size());
-		Assert.assertTrue(methods.getRightOnes().contains("getAll"));
-		Assert.assertTrue(methods.getRightOnes().contains("getAll2"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/0"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2/0"));
 	}
 
 	@Test
@@ -190,7 +221,7 @@ public class DaoMethodsTest {
 		
 		Assert.assertEquals(0,methods.getRightOnes().size());
 		Assert.assertEquals(1,methods.getProblematicOnes().size());
-		Assert.assertTrue(methods.getProblematicOnes().contains("getAll"));
+		Assert.assertTrue(methods.getProblematicOnes().contains("getAll/0"));
 	}
 	
 	@Test
@@ -212,7 +243,7 @@ public class DaoMethodsTest {
 		
 		Assert.assertEquals(1,methods.getProblematicOnes().size());
 		Assert.assertEquals(1,methods.getRightOnes().size());
-		Assert.assertTrue(methods.getProblematicOnes().contains("x4"));
-		Assert.assertTrue(methods.getRightOnes().contains("getAll4"));
+		Assert.assertTrue(methods.getProblematicOnes().contains("x4/0"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll4/0"));
 	}
 }

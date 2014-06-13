@@ -39,7 +39,6 @@ public class Runner {
 		}
 		
 		for(File f : files.getAllDaoFiles()) {
-			
 			try {
 				DaoMethods allMethods = new DaoMethods(enumerators, subtypes);
 				new ParserRunner(allMethods).run(new FileInputStream(f));

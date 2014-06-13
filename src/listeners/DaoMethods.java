@@ -69,10 +69,13 @@ public class DaoMethods extends JavaBaseListener {
 	@Override public void enterMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
 		if(classes.size()!=1) return;
 		if(notPublic()) return;
-		if(ctx.type()==null) return;
 		
-		String returnType = removeGenerics(ctx.type().getText());
-		String methodName = ctx.Identifier().getText();
+		String typeAsInTheCode;
+		if(ctx.type()==null) typeAsInTheCode = "void";
+		else typeAsInTheCode = ctx.type().getText();
+		
+		String returnType = removeGenerics(typeAsInTheCode);
+		String methodName = FullMethodName.fullMethodName(ctx.Identifier().getText(), ctx.formalParameters().formalParameterList());
 		
 		if(typeMatches(clazz(), returnType) || parameterIsFromType(ctx) ||
 				isPrimitive(returnType) || isEnum(returnType) || 
