@@ -34,11 +34,10 @@ public class Programa {
 			MetodosDoDao metodos = new MetodosDoDao();
 			new ParseTreeWalker().walk(metodos, r);
 			
-			if(args[2]==null) {
+			if(args.length==2)
 				imprimeTotalizadores(args, f, metodos);
-			} else {
+			else
 				imprimeOsQueNaoDevolvem(args, f, metodos);
-			}
 		}
 	}
 
