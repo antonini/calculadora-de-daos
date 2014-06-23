@@ -60,8 +60,8 @@ public class Runner {
 		
 		for(String m : methodsToBePrinted) {
 			System.out.println(
-				args[1] + "," + 
-				f.getAbsolutePath() + "," + 
+				args[1] + ";" + 
+				f.getAbsolutePath() + ";" + 
 				m
 			);
 		}
@@ -69,9 +69,9 @@ public class Runner {
 
 	private static void printSummary(String[] args, File f, DaoMethods methods) {
 		System.out.println(
-			args[1] + "," + 
-			f.getAbsolutePath() + "," + 
-			methods.getRightOnes().size() + "," + 
+			args[1] + ";" + 
+			f.getAbsolutePath() + ";" + 
+			methods.getRightOnes().size() + ";" + 
 			methods.getProblematicOnes().size()
 		);
 	}
