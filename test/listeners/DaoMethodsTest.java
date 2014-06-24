@@ -69,6 +69,21 @@ public class DaoMethodsTest {
 	}
 	
 	@Test
+	public void shouldMatchIfAllParametersArePrimitive() {
+		String dao = 
+				"class InvoiceDAO {"
+						+ "public AnyDTO getAll(int x, Double y, Long z) {}"
+						+ "public AnyDTO getAll2(Integer x, Calendar inv) {}"
+						+ "}";
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertEquals(2,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/3[int,Double,Long]"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2/2[Integer,Calendar]"));
+	}
+	
+	@Test
 	public void shouldUnderstandOverloadedMethods() {
 		String dao = 
 				"class InvoiceDAO {"
@@ -166,15 +181,50 @@ public class DaoMethodsTest {
 		String dao = 
 				"class InvoiceDAO {"
 						+ "public void getAll(Invoice inv) {}"
-						+ "public void getAll2(int x) {}"
+						+ "public void getAll2(int x, Invoice inv) {}"
 						+ "}";
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertEquals(2,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/1[Invoice]"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2/2[int,Invoice]"));
+	}
+
+	@Test
+	public void shouldIgnoreAnonymousClasses() {
+		String dao = 
+				"class InvoiceDAO {"
+						+ "public void getAll(Invoice inv) {"
+						+ "new Querier() { public void x() {}}"
+						+ "}"
+						+ "public void getAll2(Product x) {}"
+			  + "}";
 		
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
 		
 		Assert.assertEquals(1,methods.getRightOnes().size());
 		Assert.assertTrue(methods.getRightOnes().contains("getAll/1[Invoice]"));
+		System.out.println(methods.getProblematicOnes());
 		Assert.assertEquals(1,methods.getProblematicOnes().size());
-		Assert.assertTrue(methods.getProblematicOnes().contains("getAll2/1[int]"));
+		Assert.assertTrue(methods.getProblematicOnes().contains("getAll2/1[Product]"));
+	}
+	
+	@Test
+	public void shouldUnderstandListsInParameters() {
+		String dao = 
+				"class InvoiceDAO {"
+						+ "public void getAll(List<Invoice> inv) {}"
+						+ "public void getAll2(int x, List<Invoice> inv) {}"
+						+ "public void getAll3(List<Integer> ints) {}"
+						+ "}";
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertEquals(3,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/1[List<Invoice>]"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2/2[int,List<Invoice>]"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll3/1[List<Integer>]"));
 	}
 	
 	@Test

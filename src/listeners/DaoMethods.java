@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import antlr.JavaBaseListener;
 import antlr.JavaParser;
 import antlr.JavaParser.FormalParameterContext;
@@ -21,6 +23,7 @@ public class DaoMethods extends JavaBaseListener {
 	private List<String> primitivesList;
 	private Set<String> enumerators;
 	private Map<String, Set<String>> subtypes;
+	private boolean inner;
 	
 	public DaoMethods(Set<String> enumerators, Map<String, Set<String>> subtypes) {
 		this.enumerators = enumerators;
@@ -62,12 +65,12 @@ public class DaoMethods extends JavaBaseListener {
 	}
 
 	@Override public void enterModifier(JavaParser.ModifierContext ctx) { 
-		if(classes.size()!=1) return;
+		if(notOnMainClass()) return;
 		lastModifier = ctx.getText();
 	}
-	
+
 	@Override public void enterMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
-		if(classes.size()!=1) return;
+		if(notOnMainClass()) return;
 		if(notPublic()) return;
 		
 		String typeAsInTheCode;
@@ -78,6 +81,7 @@ public class DaoMethods extends JavaBaseListener {
 		String methodName = FullMethodName.fullMethodName(ctx.Identifier().getText(), ctx.formalParameters().formalParameterList());
 		
 		if(typeMatches(clazz(), returnType) || parameterIsFromType(ctx) ||
+				allParametersArePrimitives(ctx) ||
 				isPrimitive(returnType) || isEnum(returnType) || 
 				isSubtypeOrInterface(returnType) || isGenericWithManyTypes(returnType) ||
 				isDTO(returnType)) {
@@ -85,6 +89,22 @@ public class DaoMethods extends JavaBaseListener {
 		} else {
 			problematicOnes.add(methodName);
 		}
+	}
+
+	private boolean notOnMainClass() {
+		return classes.size()!=1 || inner;
+	}
+
+	private boolean allParametersArePrimitives(MethodDeclarationContext ctx) {
+		if(ctx.formalParameters().formalParameterList() == null) return false;
+
+		for(FormalParameterContext param : ctx.formalParameters().formalParameterList().formalParameter()) {
+			String parameterType = removeGenerics(param.type().getText());
+			if(!primitivesList.contains(parameterType)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private boolean isDTO(String returnType) {
@@ -120,6 +140,19 @@ public class DaoMethods extends JavaBaseListener {
 	@Override public void enterClassDeclaration(JavaParser.ClassDeclarationContext ctx) {
 		classes.add(ctx.Identifier().getText());
 	}
+	
+	public void enterEveryRule(ParserRuleContext ctx) { 
+//		System.out.println("aquii " + ctx.getText() + ctx.getClass().getName());
+	}
+	
+	@Override public void enterClassCreatorRest(JavaParser.ClassCreatorRestContext ctx) {
+		this.inner = true;
+	}
+	
+	@Override public void exitClassCreatorRest(JavaParser.ClassCreatorRestContext ctx) { 
+		this.inner = false;
+	}
+	
 	@Override public void exitClassDeclaration(JavaParser.ClassDeclarationContext ctx) {
 		classes.pop();
 	}
@@ -133,7 +166,7 @@ public class DaoMethods extends JavaBaseListener {
 		if(ctx.formalParameters().formalParameterList() == null) return false;
 
 		for(FormalParameterContext param : ctx.formalParameters().formalParameterList().formalParameter()) {
-			String parameterType = param.type().getText();
+			String parameterType = removeGenerics(param.type().getText());
 			if(typeMatches(clazz(), parameterType)) return true;
 		}
 		return false;
