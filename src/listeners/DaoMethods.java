@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -24,6 +26,8 @@ public class DaoMethods extends JavaBaseListener {
 	private Set<String> enumerators;
 	private Map<String, Set<String>> subtypes;
 	private boolean inner;
+	
+	private String genericType = null;
 	
 	public DaoMethods(Set<String> enumerators, Map<String, Set<String>> subtypes) {
 		this.enumerators = enumerators;
@@ -69,6 +73,14 @@ public class DaoMethods extends JavaBaseListener {
 		lastModifier = ctx.getText();
 	}
 
+	@Override public void enterGenericMethodDeclaration(JavaParser.GenericMethodDeclarationContext ctx) {
+		genericType = ctx.typeParameters().getText();
+	}
+	
+	@Override public void exitGenericMethodDeclaration(JavaParser.GenericMethodDeclarationContext ctx) {
+		genericType = null;
+	}
+	
 	@Override public void enterMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
 		if(notOnMainClass()) return;
 		if(notPublic()) return;
@@ -81,21 +93,32 @@ public class DaoMethods extends JavaBaseListener {
 		String methodName = FullMethodName.fullMethodName(ctx.Identifier().getText(), ctx.formalParameters().formalParameterList());
 		
 		if(typeMatches(clazz(), returnType) || parameterIsFromType(ctx) ||
-				allParametersArePrimitives(ctx) ||
+				allParametersArePrimitives(ctx, returnType) ||
 				isPrimitive(returnType) || isEnum(returnType) || 
 				isSubtypeOrInterface(returnType) || isGenericWithManyTypes(returnType) ||
-				isDTO(returnType)) {
+				isDTO(returnType) || genericTypeIsTheSameOfType()) {
 			rightOnes.add(methodName);
 		} else {
 			problematicOnes.add(methodName);
 		}
 	}
 
+	private boolean genericTypeIsTheSameOfType() {
+		if(genericType == null) return false;
+		
+		Pattern p = Pattern.compile("<(.*)(super|extends)(.*)>");
+		Matcher m = p.matcher(genericType);
+		m.matches();
+		
+		String cleanedGenericType = m.group(3);
+		return typeMatches(clazz(), cleanedGenericType);
+	}
+
 	private boolean notOnMainClass() {
 		return classes.size()!=1 || inner;
 	}
 
-	private boolean allParametersArePrimitives(MethodDeclarationContext ctx) {
+	private boolean allParametersArePrimitives(MethodDeclarationContext ctx, String returnType) {
 		if(ctx.formalParameters().formalParameterList() == null) return false;
 
 		for(FormalParameterContext param : ctx.formalParameters().formalParameterList().formalParameter()) {
@@ -104,7 +127,11 @@ public class DaoMethods extends JavaBaseListener {
 				return false;
 			}
 		}
-		return true;
+		return true && returnIsVoid(returnType);
+	}
+
+	private boolean returnIsVoid(String returnType) {
+		return "void".equals(returnType);
 	}
 
 	private boolean isDTO(String returnType) {

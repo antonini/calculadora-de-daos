@@ -38,6 +38,21 @@ public class DaoMethodsTest {
 		Assert.assertEquals(0,methods.getProblematicOnes().size());
 		Assert.assertTrue(methods.getRightOnes().contains("getAll/0"));
 	}
+
+	@Test
+	public void shouldMatchInheritanceInGenerics() {
+		String dao = 
+				"class InvoiceDAO {"
+						+ "public <T extends Invoice> T getAll() {}"
+						+ "public <T extends Invoice> void getAll2(T obj) {}"
+						+ "}";
+		
+		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
+		
+		Assert.assertEquals(2,methods.getRightOnes().size());
+		Assert.assertTrue(methods.getRightOnes().contains("getAll/0"));
+		Assert.assertTrue(methods.getRightOnes().contains("getAll2/1[T]"));
+	}
 	
 	@Test
 	public void shouldIgnoreConstructors() {
@@ -72,8 +87,9 @@ public class DaoMethodsTest {
 	public void shouldMatchIfAllParametersArePrimitive() {
 		String dao = 
 				"class InvoiceDAO {"
-						+ "public AnyDTO getAll(int x, Double y, Long z) {}"
-						+ "public AnyDTO getAll2(Integer x, Calendar inv) {}"
+						+ "public void getAll(int x, Double y, Long z) {}"
+						+ "public void getAll2(Integer x, Calendar inv) {}"
+						+ "public AnyDTO getAll3(Integer x, Calendar inv) {}"
 						+ "}";
 		
 		new ParserRunner(methods).run(new ByteArrayInputStream(dao.getBytes()));
@@ -81,6 +97,9 @@ public class DaoMethodsTest {
 		Assert.assertEquals(2,methods.getRightOnes().size());
 		Assert.assertTrue(methods.getRightOnes().contains("getAll/3[int,Double,Long]"));
 		Assert.assertTrue(methods.getRightOnes().contains("getAll2/2[Integer,Calendar]"));
+
+		Assert.assertEquals(1,methods.getProblematicOnes().size());
+		Assert.assertTrue(methods.getProblematicOnes().contains("getAll3/2[Integer,Calendar]"));
 	}
 	
 	@Test
@@ -205,7 +224,6 @@ public class DaoMethodsTest {
 		
 		Assert.assertEquals(1,methods.getRightOnes().size());
 		Assert.assertTrue(methods.getRightOnes().contains("getAll/1[Invoice]"));
-		System.out.println(methods.getProblematicOnes());
 		Assert.assertEquals(1,methods.getProblematicOnes().size());
 		Assert.assertTrue(methods.getProblematicOnes().contains("getAll2/1[Product]"));
 	}
