@@ -31,7 +31,7 @@ public class FileLister {
 			File[] filesAndDirs = aStartingDir.listFiles();
 			for (File file : filesAndDirs) {
 				if (file.isDirectory()) {
-					getAllDaoFilesIn(file, result);
+					getAllProductionFilesIn(file, result);
 				} else if (file.isFile() && !isDao(file)) {
 					result.add(file);
 				}
